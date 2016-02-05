@@ -1,8 +1,41 @@
 angular.module('app', [])
-  .controller('MainController', ['$scope', function($scope) {
+  .controller('MainController', ['$scope', '$timeout', function($scope, $timeout) {
 
-    $scope.ignite = function(index) {
-        $scope.land[index]
+    $scope.land = []
+
+    $scope.active = ''
+
+    $scope.activate = function(button) {
+        $scope.active = button
+    }
+
+    $scope.touchTile = function(index) {
+        if ($scope.active == 'campfire') {
+            $scope.chainIgnite(index, -1)
+            $scope.chainIgnite(index, +1)
+        } else if ($scope.active == 'lake') {
+            $scope.land[index].makeLake()
+        } else {
+            return
+        }
+    }
+
+    $scope.chainIgnite = function(index, increment) {
+        if ($scope.land[index].class !== '') { return }
+        $scope.land[index].ignite()
+        var next = getNext(index, increment)
+        console.log(next)
+        $timeout($scope.chainIgnite(next, increment), 5000)
+    }
+
+    var getNext = function(index, increment) {
+        if (index === 0) {
+            return $scope.land.length - 1
+        } else if (index === $scope.land.length) {
+            return 0
+        } else {
+            return index + increment
+        }
     }
 
     var Tile = function(land, tileList, index) {
@@ -10,49 +43,35 @@ angular.module('app', [])
         this.land = land
         this.tileList = tileList
         this.index = index
-        this.style = "'background-color' :'white'"
+        this.class = ''
         this.lake = false
     }
 
     Tile.prototype = {
-        ignite : function(tileList) {
-            if (this.land == 'Lake') { return } // a different way to check
-            console.log('clicked this guy: ', this)
-            this.style = "'background-color' : 'orange'"
-            setTimeout(this.igniteNeighbors, 500)
+        ignite : function() {
+            if (this.class !== '') { return }
+            this.class = 'btn-warning'
         },
-        burn : function(tileList) {
-            this.style = "'background-color' : 'red'"
+        burn : function() {
+            if (this.class !== 'btn-warning') { return }
+            this.class = 'btn-danger'
             setTimeout(this.burnNeighbors, 1000)
         },
-        igniteNeighbors : function(tileList) {  // way to pass ignite or burn as functions to cut down double-code?
-            neighborA = this.findNeighbor(+1)
-            neighborB = this.findNeighbor(-1)
-            neighborA.ignite()
-            neighborB.ignite()
-        },
-        burnNeighbors : function(tileList) {
-            neighborA = this.findNeighbor(+1)
-            neighborB = this.findNeighbor(-1)
-            neighborA.burn()
-            neighborB.burn()
-        },
-        findNeighbors : function(tileList, shift) {
-            var a = (this.index + shift) % tile.list.length
-            return tileList[index]
-        },
         makeLake : function() {
+            if (this.class !== '') { return }
             this.lake = true
-            this.style = "'background-color' : 'blue'"
+            this.class = 'btn-info'
         }
     }
 
-    // processLands
+    var processLands = function(data) {
+        data.forEach(function(tile) {
+            $scope.land.push(new Tile(tile, $scope.land, $scope.land.length))
+        })
+    }
 
 
-// makeLake this.land = 'Lake'
-
-  $scope.land = [
+  var land = [
     'Trees',
     'Grass',
     'Shrubs',
@@ -135,6 +154,7 @@ angular.module('app', [])
     'Shrubs',
     'Trees'
   ]
+    processLands(land)
 
 }])
 
