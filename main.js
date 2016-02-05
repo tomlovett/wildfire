@@ -16,7 +16,7 @@ angular.module('app', [])
 
     Tile.prototype = {
         ignite : function(tileList) {
-            if (this.land == 'Lake') { return }
+            if (this.land == 'Lake') { return } // a different way to check
             console.log('clicked this guy: ', this)
             this.style = "'background-color' : 'orange'"
             setTimeout(this.igniteNeighbors, 500)
@@ -40,14 +40,15 @@ angular.module('app', [])
         findNeighbors : function(tileList, shift) {
             var a = (this.index + shift) % tile.list.length
             return tileList[index]
+        },
+        makeLake : function() {
+            this.lake = true
+            this.style = "'background-color' : 'blue'"
         }
     }
 
     // processLands
 
-// initiateBurn -> on-click
-// burnNeighbors -> timeout 
-// initiateBurn's on the neighbor (if != lake)
 
 // makeLake this.land = 'Lake'
 
