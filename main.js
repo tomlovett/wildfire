@@ -4,6 +4,8 @@ angular.module('app', [])
 
     $scope.active = ''
 
+    var lake = 'btn-info'
+
     $scope.styles = {}
 
     $scope.activate = function(button) {
@@ -12,45 +14,47 @@ angular.module('app', [])
 
     $scope.touchTile = function(index) {
         if ($scope.active == 'campfire') {
-            $scope.initiateChain(index, 'btn-warning', 500) // ignite
-            $timeout(function() { 
-                $scope.initiateChain(index, 'btn-danger', 1000)
-            }, 1000) // burn
+            startFireChain(index)
         } else if ($scope.active == 'lake') {
-            $scope.styles[index] = 'btn-info'
+            $scope.styles[index] = 'btn-info'  // turns 
         } else {
             return
         }
     }
 
-    $scope.initiateChain = function(index, style, delay) {
-        $scope.chainModify(index, style, delay, -1)
+    var startFireChain = function(index) {
+        initFire(index, 'btn-warning', 500) // ignite
+        $timeout(function() { 
+            initFire(index, 'btn-danger', 1000)  // wait one second, burn
+        }, 1000)
+    }
+
+    var initFire = function(index, style, delay) {
+        burn(index, style, delay, -1)         // sending fire left
         $timeout(function() {
-            $scope.chainModify(index+1, style, delay, 1)
+            burn(index+1, style, delay, 1)    // sending right
         }, delay)
     }
 
-    $scope.chainModify = function(index, style, delay, increment) {
+    var burn = function(index, style, delay, increment) {
         if ($scope.styles[index] == 'btn-info') { return }
         $scope.styles[index] = style
         var next = getNext(index, increment)
         $timeout(function(){
-            $scope.chainModify(next, style, delay, increment)
+            burn(next, style, delay, increment)
         }, delay)
     }
 
-    var getNext = function(index, increment) {
-        if (index === 0) {
-            return $scope.land.length - 1
-        } else if (index === $scope.land.length) {
-            return 0
-        } else {
-            return index + increment
-        }
+
+    $scope.Conflagration = function(index, style, delay, increment) {
+        this.style = style
+        this.index = index
+        this.increment = increment
+        this.delay = delay
     }
 
-    var smarter = function(index, increment) {
-        return (index + $scope.land.length) % $scope.land.length
+    var getNext = function(index, increment) {
+        return (index + increment + $scope.land.length ) % $scope.land.length
     }
 
 
