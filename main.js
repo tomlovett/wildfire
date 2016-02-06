@@ -45,14 +45,6 @@ angular.module('app', [])
         }, delay)
     }
 
-
-    $scope.Conflagration = function(index, style, delay, increment) {
-        this.style = style
-        this.index = index
-        this.increment = increment
-        this.delay = delay
-    }
-
     var getNext = function(index, increment) {
         return (index + increment + $scope.land.length ) % $scope.land.length
     }
