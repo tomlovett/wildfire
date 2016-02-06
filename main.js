@@ -11,8 +11,9 @@ angular.module('app', [])
 
     $scope.touchTile = function(index) {
         if ($scope.active == 'campfire') {
-            $scope.chainIgnite(index, -1)
-            $scope.chainIgnite(index, +1)
+            var next 
+            $scope.initiateChain(index)
+
         } else if ($scope.active == 'lake') {
             $scope.land[index].makeLake()
         } else {
@@ -20,12 +21,21 @@ angular.module('app', [])
         }
     }
 
-    $scope.chainIgnite = function(index, increment) {
+    $scope.initiateChain = function(index) {
+        $scope.chainModify(index, -1)
+        $timeout(function() {
+            $scope.chainModify(index + 1, 1)
+        }, 500)
+    }
+
+    $scope.chainModify = function(index, increment) {
+        console.log(index, increment)
         if ($scope.land[index].class !== '') { return }
         $scope.land[index].ignite()
         var next = getNext(index, increment)
-        console.log(next)
-        $timeout($scope.chainIgnite(next, increment), 5000)
+        $timeout(function(){
+            $scope.chainModify(next, increment)
+        }, 500)
     }
 
     var getNext = function(index, increment) {
@@ -38,13 +48,9 @@ angular.module('app', [])
         }
     }
 
-    var Tile = function(land, tileList, index) {
-        // style = initateBurn -> orange, burnNeighbors -> red 
+    var Tile = function(land) {
         this.land = land
-        this.tileList = tileList
-        this.index = index
         this.class = ''
-        this.lake = false
     }
 
     Tile.prototype = {
@@ -55,18 +61,16 @@ angular.module('app', [])
         burn : function() {
             if (this.class !== 'btn-warning') { return }
             this.class = 'btn-danger'
-            setTimeout(this.burnNeighbors, 1000)
         },
         makeLake : function() {
             if (this.class !== '') { return }
-            this.lake = true
             this.class = 'btn-info'
         }
     }
 
     var processLands = function(data) {
-        data.forEach(function(tile) {
-            $scope.land.push(new Tile(tile, $scope.land, $scope.land.length))
+        data.forEach(function(land) {
+            $scope.land.push(new Tile(land))
         })
     }
 
