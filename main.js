@@ -1,9 +1,10 @@
 angular.module('app', [])
   .controller('MainController', ['$scope', '$timeout', function($scope, $timeout) {
 
-    $scope.land = []
 
     $scope.active = ''
+
+    $scope.styles = {}
 
     $scope.activate = function(button) {
         $scope.active = button
@@ -11,31 +12,31 @@ angular.module('app', [])
 
     $scope.touchTile = function(index) {
         if ($scope.active == 'campfire') {
-            var next 
-            $scope.initiateChain(index)
-
+            $scope.initiateChain(index, 'btn-warning', 500) // ignite
+            $timeout(function() { 
+                $scope.initiateChain(index, 'btn-danger', 1000)
+            }, 1000) // burn
         } else if ($scope.active == 'lake') {
-            $scope.land[index].makeLake()
+            $scope.styles[index] = 'btn-info'
         } else {
             return
         }
     }
 
-    $scope.initiateChain = function(index) {
-        $scope.chainModify(index, -1)
+    $scope.initiateChain = function(index, style, delay) {
+        $scope.chainModify(index, style, delay, -1)
         $timeout(function() {
-            $scope.chainModify(index + 1, 1)
-        }, 500)
+            $scope.chainModify(index+1, style, delay, 1)
+        }, delay)
     }
 
-    $scope.chainModify = function(index, increment) {
-        console.log(index, increment)
-        if ($scope.land[index].class !== '') { return }
-        $scope.land[index].ignite()
+    $scope.chainModify = function(index, style, delay, increment) {
+        if ($scope.styles[index] == 'btn-info') { return }
+        $scope.styles[index] = style
         var next = getNext(index, increment)
         $timeout(function(){
-            $scope.chainModify(next, increment)
-        }, 500)
+            $scope.chainModify(next, style, delay, increment)
+        }, delay)
     }
 
     var getNext = function(index, increment) {
@@ -48,34 +49,12 @@ angular.module('app', [])
         }
     }
 
-    var Tile = function(land) {
-        this.land = land
-        this.class = ''
-    }
-
-    Tile.prototype = {
-        ignite : function() {
-            if (this.class !== '') { return }
-            this.class = 'btn-warning'
-        },
-        burn : function() {
-            if (this.class !== 'btn-warning') { return }
-            this.class = 'btn-danger'
-        },
-        makeLake : function() {
-            if (this.class !== '') { return }
-            this.class = 'btn-info'
-        }
-    }
-
-    var processLands = function(data) {
-        data.forEach(function(land) {
-            $scope.land.push(new Tile(land))
-        })
+    var smarter = function(index, increment) {
+        return (index + $scope.land.length) % $scope.land.length
     }
 
 
-  var land = [
+  $scope.land = [
     'Trees',
     'Grass',
     'Shrubs',
@@ -158,7 +137,6 @@ angular.module('app', [])
     'Shrubs',
     'Trees'
   ]
-    processLands(land)
 
 }])
 
